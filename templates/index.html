@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forecast Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="sidebar-sticky pt-3">
+                <h5 class="text-center">Saved Forecasts</h5>
+                <ul class="nav flex-column">
+                    {% for forecast in forecasts %}
+                        <li class="nav-item">
+                            <a href="{% url 'render_forecast_table' forecast.id %}" class="nav-link">{{ forecast.total_forecast_name }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Forecast Dashboard</h1>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="card border-gray">
+                        <div class="card-body">
+                            <form id="forecast-form" method="post" action="/validate_date_range/">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="start-source" class="form-label">Start Date (Historical)</label>
+                                    <input type="date" id="start-source" name="start_source" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="end-source" class="form-label">End Date (Historical)</label>
+                                    <input type="date" id="end-source" name="end_source" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="start-forecast" class="form-label">Start Date (Forecast)</label>
+                                    <input type="date" id="start-forecast" name="start_forecast" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="end-forecast" class="form-label">End Date (Forecast)</label>
+                                    <input type="date" id="end-forecast" name="end_forecast" class="form-control" required>
+                                </div>
+                                <button type="submit" id="submit-forecast" class="btn btn-primary">Generate Forecast</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-gray">
+                        <div class="card-body">
+                            {% if avg_forecast.total_forecast_plot_path %}
+                                <img src="/static/{{ avg_forecast.total_forecast_plot_path }}" alt="Forecast Plot" style="width:100%;">
+                            {% else %}
+                                <p>No plot available.</p>
+                            {% endif %}
+                            <p id="forecast-accuracy" class="text-end text-muted">Accuracy: {{ avg_forecast.total_forecast_accuracy }}%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5>Forecast Data</h5>
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Product</th>
+                            <th>Order Quantity</th>
+                            <th>Unit Cost</th>
+                            <th>Unit Price</th>
+                            <th>Profit</th>
+                            <th>Revenue</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for row in forecast_data|slice:"25" %}
+                            <tr class="forecasted-row">
+                                <td>{{ row.date }}</td>
+                                <td>{{ row.product }}</td>
+                                <td>{{ row.order_quantity }}</td>
+                                <td>{{ row.unit_cost }}</td>
+                                <td>{{ row.unit_price }}</td>
+                                <td>{{ row.profit }}</td>
+                                <td>{{ row.revenue }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>
